@@ -2,11 +2,13 @@ import type { Metadata } from 'next';
 import { Inter } from 'next/font/google';
 import './globals.css';
 import { Toaster } from 'react-hot-toast';
+import Navbar from '@/components/layout/Navbar';
+import CartDrawer from '@/components/cart/CartDrawer';
 
 const inter = Inter({
-    subsets: ['latin'],
+    subsets:  ['latin'],
     variable: '--font-inter',
-    display: 'swap',
+    display:  'swap',
 });
 
 export const metadata: Metadata = {
@@ -18,11 +20,6 @@ export const metadata: Metadata = {
     metadataBase: new URL(
         process.env.NEXT_PUBLIC_APP_URL ?? 'http://localhost:3000'
     ),
-    openGraph: {
-        type:      'website',
-        siteName:  'SmartOrder',
-        locale:    'en_US',
-    },
 };
 
 export default function RootLayout({
@@ -33,15 +30,17 @@ export default function RootLayout({
     return (
         <html lang="en" className={inter.variable}>
         <body className="min-h-screen bg-gray-50 font-sans antialiased">
+        <Navbar />
+        <CartDrawer />
         {children}
         <Toaster
             position="top-right"
             toastOptions={{
                 duration: 4000,
                 style: {
-                    background: '#1e293b',
-                    color:      '#f8fafc',
-                    fontSize:   '14px',
+                    background:   '#1e293b',
+                    color:        '#f8fafc',
+                    fontSize:     '14px',
                     borderRadius: '8px',
                 },
                 success: { iconTheme: { primary: '#22c55e', secondary: '#f8fafc' } },
