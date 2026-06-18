@@ -1,0 +1,61 @@
+spring:
+  application:
+    name: eureka-server
+
+  # Pull remaining config from Config Server
+  config:
+    import: "optional:configserver:${CONFIG_SERVER_URI:http://localhost:8888}"
+
+  cloud:
+    config:
+      uri: ${CONFIG_SERVER_URI:http://localhost:8888}
+      username: ${CONFIG_SERVER_USER:configuser}
+      password: ${CONFIG_SERVER_PASSWORD:configpass}
+      fail-fast: false
+
+  # Basic auth credentials for the Eureka dashboard / peer replication
+  security:
+    user:
+      name: ${EUREKA_USER:eurekauser}
+      password: ${EUREKA_PASSWORD:eurekapass}
+
+server:
+  port: 8761
+
+eureka:
+  instance:
+    hostname: ${EUREKA_HOSTNAME:localhost}
+    prefer-ip-address: false
+
+  client:
+    # This IS the registry — it should not register with itself
+    register-with-eureka: false
+    fetch-registry: false
+    service-url:
+      defaultZone: http://${EUREKA_USER:eurekauser}:${EUREKA_PASSWORD:eurekapass}@${eureka.instance.hostname}:${server.port}/eureka/
+
+  server:
+    # Disable self-preservation in dev (re-enable in prod for stability)
+    enable-self-preservation: ${EUREKA_SELF_PRESERVATION:false}
+    # How often (ms) Eureka evicts expired instances
+    eviction-interval-timer-in-ms: 5000
+    # Peer node connect / read timeouts
+    peer-node-connect-timeout-ms: 2000
+    peer-node-read-timeout-ms: 5000
+    # Reduce startup noise in dev
+    wait-time-in-ms-when-sync-empty: 0
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics
+  endpoint:
+    health:
+      show-details: always
+
+logging:
+  level:
+    com.netflix.eureka: WARN
+    com.netflix.discovery: WARN
+    com.smartorder: DEBUG

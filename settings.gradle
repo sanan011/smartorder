@@ -1,0 +1,25 @@
+pluginManagement {
+    repositories {
+        gradlePluginPortal()
+        mavenCentral()
+    }
+}
+
+rootProject.name = 'smartorder'
+
+// Shared library
+include 'shared:common-lib'
+
+// Infrastructure services
+include 'services:config-server'
+include 'services:eureka-server'
+include 'services:api-gateway'
+
+// Domain microservices
+include 'services:auth-service'
+include 'services:product-service'
+include 'services:inventory-service'
+include 'services:order-service'
+include 'services:cart-service'
+include 'services:notification-service'
+include 'services:seller-service'

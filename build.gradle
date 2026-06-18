@@ -1,0 +1,102 @@
+// ============================================================
+// SmartOrder — MƏRKƏZİ ROOT BUILD CONFIGURATION (Fixed Lombok)
+// Faylın yeri: smartorder/build.gradle (Ən üst qovluq)
+// ============================================================
+
+plugins {
+    id 'java'
+    id 'org.springframework.boot' version '3.2.5' apply false
+}
+
+allprojects {
+    group   = 'com.smartorder'
+    version = '1.0.0-SNAPSHOT'
+
+    repositories {
+        mavenCentral()
+    }
+}
+
+subprojects {
+    apply plugin: 'java'
+
+    java {
+        toolchain {
+            languageVersion = JavaLanguageVersion.of(21)
+        }
+    }
+
+    compileJava.options.encoding   = 'UTF-8'
+    compileTestJava.options.encoding = 'UTF-8'
+
+    dependencies {
+        // 🎯 HƏLL BURADADIR: Spring Boot BOM-u Lombok-un işlədiyi bütün sahələrə tanıdırıq
+        implementation platform("org.springframework.boot:spring-boot-dependencies:3.2.5")
+        compileOnly platform("org.springframework.boot:spring-boot-dependencies:3.2.5")
+        annotationProcessor platform("org.springframework.boot:spring-boot-dependencies:3.2.5")
+        testCompileOnly platform("org.springframework.boot:spring-boot-dependencies:3.2.5")
+        testAnnotationProcessor platform("org.springframework.boot:spring-boot-dependencies:3.2.5")
+
+        // Spring Cloud BOM
+        implementation platform("org.springframework.cloud:spring-cloud-dependencies:2023.0.1")
+
+        // Lombok (Artıq yuxarıdakı platformalar sayəsində versiyasını rəsmi tapacaq)
+        compileOnly         'org.projectlombok:lombok'
+        annotationProcessor 'org.projectlombok:lombok'
+        testCompileOnly     'org.projectlombok:lombok'
+        testAnnotationProcessor 'org.projectlombok:lombok'
+
+        // Ortaq kitabxanalar
+        implementation 'jakarta.validation:jakarta.validation-api'
+        implementation 'org.slf4j:slf4j-api'
+
+        // Testing
+        testImplementation 'org.springframework.boot:spring-boot-starter-test'
+        testImplementation 'org.junit.jupiter:junit-jupiter'
+        testImplementation 'org.mockito:mockito-core'
+        testImplementation 'org.assertj:assertj-core'
+        testImplementation platform('org.testcontainers:testcontainers-bom:1.19.7')
+        testImplementation 'org.testcontainers:junit-jupiter'
+    }
+
+    test {
+        useJUnitPlatform()
+        jvmArgs '-XX:+EnableDynamicAgentLoading'
+    }
+}
+
+// Mikroservislər üçün ortaq sazlamalar (:services:)
+configure(subprojects.findAll { it.path.startsWith(':services:') }) {
+    apply plugin: 'org.springframework.boot'
+
+    dependencies {
+        implementation 'org.springframework.boot:spring-boot-starter-actuator'
+        implementation 'io.micrometer:micrometer-tracing-bridge-brave'
+        implementation 'io.zipkin.reporter2:zipkin-reporter-brave'
+        runtimeOnly    'io.micrometer:micrometer-registry-prometheus'
+    }
+
+    // A module can only be packaged as an executable Spring Boot jar if it has
+    // application sources (a @SpringBootApplication main class). Empty placeholder
+    // services have no main class, so bootJar would fail at execution time —
+    // for those we keep the plain jar instead.
+    //
+    // Use the lazy task-configuration API (tasks.named) so tasks are configured
+    // only when realized, avoiding eager mutation during the configuration phase.
+    def hasAppSources = fileTree('src/main/java').matching { include '**/*.java' }.isEmpty() == false
+
+    tasks.named('bootJar') {
+        enabled = hasAppSources
+    }
+    tasks.named('jar') {
+        enabled = !hasAppSources
+    }
+}
+
+// Ortaq kitabxanalar üçün plain-jar sazlaması (:shared:)
+configure(subprojects.findAll { it.path.startsWith(':shared:') }) {
+    // Library modules have no Spring Boot plugin, so only the plain jar exists.
+    tasks.named('jar') {
+        enabled = true
+    }
+}

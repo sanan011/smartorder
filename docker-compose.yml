@@ -1,0 +1,90 @@
+# ============================================================
+# SmartOrder — local infrastructure for running the services.
+# Brings up PostgreSQL, Redis, and Kafka with the ports and
+# credentials the services expect (see config-repo/*.yml).
+#
+#   Start:   docker compose up -d
+#   Status:  docker compose ps
+#   Logs:    docker compose logs -f kafka
+#   Stop:    docker compose down            (keeps data)
+#   Reset:   docker compose down -v         (drops the DB volume)
+#
+# Services run on the host via `./gradlew :services:<name>:bootRun`
+# and reach this infra on localhost:5432 / 6379 / 9092.
+# ============================================================
+
+services:
+
+  # ── PostgreSQL ───────────────────────────────────────────
+  # Matches auth-service: db=smartorder_auth user=smartorder pass=smartorder
+  postgres:
+    image: postgres:16-alpine
+    container_name: smartorder-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: smartorder_auth
+      POSTGRES_USER: smartorder
+      POSTGRES_PASSWORD: smartorder
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    healthcheck:
+      # -d/-U so the check passes only once the smartorder DB is actually ready
+      test: ["CMD-SHELL", "pg_isready -U smartorder -d smartorder_auth"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+
+  # ── Redis ────────────────────────────────────────────────
+  # No password (matches REDIS_PASSWORD: "" in the service configs)
+  redis:
+    image: redis:7-alpine
+    container_name: smartorder-redis
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis-data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 5s
+
+  # ── Kafka (KRaft mode — no ZooKeeper) ────────────────────
+  # Single-node broker advertised on localhost:9092 for host clients.
+  kafka:
+    image: apache/kafka:3.7.0
+    container_name: smartorder-kafka
+    restart: unless-stopped
+    ports:
+      - "9092:9092"
+    environment:
+      KAFKA_NODE_ID: 1
+      KAFKA_PROCESS_ROLES: broker,controller
+      KAFKA_LISTENERS: PLAINTEXT://0.0.0.0:9092,CONTROLLER://0.0.0.0:9093
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://localhost:9092
+      KAFKA_CONTROLLER_LISTENER_NAMES: CONTROLLER
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: CONTROLLER:PLAINTEXT,PLAINTEXT:PLAINTEXT
+      KAFKA_CONTROLLER_QUORUM_VOTERS: 1@localhost:9093
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+      KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1
+      KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1
+      KAFKA_GROUP_INITIAL_REBALANCE_DELAY_MS: 0
+      KAFKA_AUTO_CREATE_TOPICS_ENABLE: "true"
+    volumes:
+      - kafka-data:/var/lib/kafka/data
+    healthcheck:
+      test: ["CMD-SHELL", "/opt/kafka/bin/kafka-topics.sh --bootstrap-server localhost:9092 --list || exit 1"]
+      interval: 15s
+      timeout: 10s
+      retries: 5
+      start_period: 20s
+
+volumes:
+  postgres-data:
+  redis-data:
+  kafka-data:

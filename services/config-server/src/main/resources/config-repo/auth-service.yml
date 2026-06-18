@@ -1,0 +1,48 @@
+server:
+  port: 8081
+
+spring:
+  application:
+    name: auth-service
+
+  datasource:
+    url: ${AUTH_DB_URL:jdbc:postgresql://localhost:5432/smartorder_auth}
+    username: ${AUTH_DB_USER:smartorder}
+    password: ${AUTH_DB_PASS:smartorder}
+    driver-class-name: org.postgresql.Driver
+
+  jpa:
+    hibernate:
+      ddl-auto: validate        # Flyway manages schema; never use create/update in prod
+    show-sql: false
+
+  data:
+    redis:
+      host: ${REDIS_HOST:localhost}
+      port: ${REDIS_PORT:6379}
+      password: ${REDIS_PASSWORD:}
+      lettuce:
+        pool:
+          max-active: 8
+          max-idle: 4
+
+  kafka:
+    bootstrap-servers: ${KAFKA_BROKERS:localhost:9092}
+    producer:
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
+      acks: all
+      retries: 3
+      properties:
+        enable.idempotence: true
+
+jwt:
+  secret: ${JWT_SECRET:MyUltraSecureJwtSecretKeyForDevOnly!ChangeInProd}
+  access-token-expiry-ms: ${JWT_ACCESS_EXPIRY:900000}        # 15 min
+  refresh-token-expiry-ms: ${JWT_REFRESH_EXPIRY:604800000}   # 7 days
+
+smartorder:
+  auth:
+    max-failed-attempts: 5
+    lockout-duration-minutes: 30
+    password-min-length: 8

@@ -1,0 +1,85 @@
+server:
+  port: ${AUTH_SERVICE_PORT:8081}
+
+spring:
+  application:
+    name: auth-service
+
+  config:
+    import: "optional:configserver:${CONFIG_SERVER_URI:http://localhost:8888}"
+
+  cloud:
+    config:
+      uri: ${CONFIG_SERVER_URI:http://localhost:8888}
+      username: ${CONFIG_SERVER_USER:configuser}
+      password: ${CONFIG_SERVER_PASSWORD:configpass}
+      fail-fast: false
+
+  # Local datasource fallback so the service boots even when the Config Server is
+  # down (the import above is "optional:"). When Config Server IS up, the values
+  # in config-repo/auth-service.yml override these. Requires a running PostgreSQL.
+  datasource:
+    url: ${AUTH_DB_URL:jdbc:postgresql://localhost:5432/smartorder_auth}
+    username: ${AUTH_DB_USER:smartorder}
+    password: ${AUTH_DB_PASS:smartorder}
+    driver-class-name: org.postgresql.Driver
+
+  # Flyway — manages schema migrations automatically on startup
+  flyway:
+    enabled: true
+    locations: classpath:db/migration
+    baseline-on-migrate: true
+    validate-on-migrate: true
+
+  # JPA — schema validation only (Flyway owns the schema)
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    show-sql: false
+    open-in-view: false
+
+  # Redis serialization type hints
+  data:
+    redis:
+      repositories:
+        enabled: false   # We manage Redis manually via RedisTemplate
+
+  # Kafka producer defaults
+  kafka:
+    producer:
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
+      properties:
+        spring.json.add.type.headers: false
+
+# JWT settings — local fallback (config-repo/auth-service.yml overrides when the
+# Config Server is serving). Must match the gateway's jwt.secret for token validation.
+jwt:
+  secret: ${JWT_SECRET:MyUltraSecureJwtSecretKeyForDevOnly!ChangeInProd}
+  access-token-expiry-ms: ${JWT_ACCESS_EXPIRY:900000}        # 15 min
+  refresh-token-expiry-ms: ${JWT_REFRESH_EXPIRY:604800000}   # 7 days
+
+eureka:
+  client:
+    service-url:
+      defaultZone: ${EUREKA_URI:http://eurekauser:eurekapass@localhost:8761/eureka}
+    fetch-registry: true
+    register-with-eureka: true
+  instance:
+    prefer-ip-address: true
+    instance-id: ${spring.application.name}:${server.port:8081}
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics,prometheus
+  endpoint:
+    health:
+      show-details: always
+
+logging:
+  level:
+    com.smartorder.auth: DEBUG
+    org.springframework.security: INFO
+    org.flywaydb: INFO

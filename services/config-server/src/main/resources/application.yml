@@ -1,0 +1,56 @@
+server:
+  port: 8888
+
+spring:
+  application:
+    name: config-server
+
+  # Activate the native (filesystem/classpath) backend. Without this the Config
+  # Server defaults to the Git backend and fails on boot ("You need to configure
+  # a uri for the git repository").
+  profiles:
+    active: native
+
+  security:
+    user:
+      name: ${CONFIG_SERVER_USER:configuser}
+      password: ${CONFIG_SERVER_PASSWORD:configpass}
+
+  cloud:
+    config:
+      server:
+        # Native filesystem/classpath backend — in production swap for:
+        # git.uri: https://github.com/your-org/smartorder-config
+        native:
+          search-locations: classpath:/config-repo
+        encrypt:
+          enabled: true
+
+    # Config Server itself registers with Eureka so services
+    # can discover it instead of hardcoding the URL
+  config:
+    import: "optional:configserver:"
+
+# Symmetric encryption key for {cipher} values in config files.
+# In production inject via Vault or AWS KMS — never commit plaintext.
+encrypt:
+  key: ${CONFIG_ENCRYPT_KEY:MyStr0ngD3faultK3y!ChangeInProd}
+
+eureka:
+  client:
+    service-url:
+      defaultZone: ${EUREKA_URI:http://localhost:8761/eureka}
+    fetch-registry: true
+    register-with-eureka: true
+  instance:
+    prefer-ip-address: true
+    instance-id: ${spring.application.name}:${server.port}
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,env,refresh
+  endpoint:
+    health:
+      show-details: always

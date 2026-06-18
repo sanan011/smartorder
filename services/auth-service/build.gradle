@@ -1,0 +1,36 @@
+// Faylın yeri: services/auth-service/build.gradle
+
+dependencies {
+    implementation 'org.springframework.boot:spring-boot-starter-web'
+    implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
+
+    // Spring Security (servlet): SecurityFilterChain, HttpSecurity, EnableWebSecurity, etc.
+    implementation 'org.springframework.boot:spring-boot-starter-security'
+
+    // Redis for refresh-token storage
+    implementation 'org.springframework.boot:spring-boot-starter-data-redis'
+
+    // Kafka (KafkaTemplate, EnableKafka, TopicBuilder, NewTopic)
+    implementation 'org.springframework.kafka:spring-kafka'
+
+    // Service discovery (EnableDiscoveryClient)
+    implementation 'org.springframework.cloud:spring-cloud-starter-netflix-eureka-client'
+
+    // JWT (jjwt 0.12.x API)
+    implementation 'io.jsonwebtoken:jjwt-api:0.12.5'
+    runtimeOnly    'io.jsonwebtoken:jjwt-impl:0.12.5'
+    runtimeOnly    'io.jsonwebtoken:jjwt-jackson:0.12.5'
+
+    // BCrypt password hashing (at.favre.lib.crypto.bcrypt.BCrypt)
+    implementation 'at.favre.lib:bcrypt:0.10.2'
+
+    // PostgreSQL driver
+    runtimeOnly 'org.postgresql:postgresql'
+
+    // Flyway 10.x (Boot 3.2.5 BOM manages 9.x which lacks the database-postgresql module)
+    implementation 'org.flywaydb:flyway-core:10.10.0'
+    implementation 'org.flywaydb:flyway-database-postgresql:10.10.0'
+
+    // Shared library
+    implementation project(':shared:common-lib')
+}

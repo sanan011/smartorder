@@ -1,0 +1,24 @@
+// Faylın yeri: services/api-gateway/build.gradle
+// Üst kök fayl avtomatik olaraq bura Spring Boot tətbiq edir.
+
+dependencies {
+    // Gateway (reactive/WebFlux based)
+    implementation 'org.springframework.cloud:spring-cloud-starter-gateway'
+    implementation 'org.springframework.boot:spring-boot-starter-data-redis-reactive' // reactive rate limiter
+
+    // Reactive Spring Security — provides EnableWebFluxSecurity, ServerHttpSecurity, SecurityWebFilterChain
+    implementation 'org.springframework.boot:spring-boot-starter-security'
+
+    // Service discovery (EnableDiscoveryClient)
+    implementation 'org.springframework.cloud:spring-cloud-starter-netflix-eureka-client'
+
+    // Circuit breaker — REACTOR variant: the reactive gateway's 'CircuitBreaker'
+    // GatewayFilterFactory needs a ReactiveCircuitBreakerFactory, which the plain
+    // (servlet) resilience4j starter does NOT provide.
+    implementation 'org.springframework.cloud:spring-cloud-starter-circuitbreaker-reactor-resilience4j'
+
+    // JWT (jjwt 0.12.x API: Jwts.parser().verifyWith(...))
+    implementation 'io.jsonwebtoken:jjwt-api:0.12.5'
+    runtimeOnly    'io.jsonwebtoken:jjwt-impl:0.12.5'
+    runtimeOnly    'io.jsonwebtoken:jjwt-jackson:0.12.5'
+}
