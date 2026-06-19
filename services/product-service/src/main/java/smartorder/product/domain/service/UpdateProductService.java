@@ -71,8 +71,4 @@ public class UpdateProductService implements UpdateProductUseCase {
             log.warn("Failed to publish ProductUpdated event: {}", e.getMessage());
         }
     }
-
-    private boolean isAdmin(Command command) {
-        return command.isAdmin();
-    }
 }

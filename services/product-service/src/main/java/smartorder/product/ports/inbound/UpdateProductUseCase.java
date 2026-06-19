@@ -14,6 +14,7 @@ public interface UpdateProductUseCase {
     record Command(
             UUID         productId,
             UUID         requesterId,    // must match sellerId or be ADMIN
+            boolean      isAdmin,        // requester holds the ADMIN role
             String       name,
             String       description,
             BigDecimal   price,

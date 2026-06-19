@@ -40,7 +40,7 @@ export default function NewProductPage() {
 
     const [categories,   setCategories]   = useState<Category[]>([]);
     const [createdId,    setCreatedId]    = useState<string | null>(null);
-    const [images,       setImages]       = useState
+    const [images,       setImages]       = useState<
     { file: File; preview: string; uploaded?: string }[]
     >([]);
     const [isSubmitting, setIsSubmitting] = useState(false);

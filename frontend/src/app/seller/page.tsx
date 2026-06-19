@@ -141,7 +141,7 @@ export default function SellerDashboardPage() {
                                     icon:  BarChart2,
                                 },
                             ].map(({ href, label, icon: Icon }) => (
-
+                                <a
                                 key={href}
                                 href={href}
                                 className="flex items-center gap-3 p-3 rounded-lg

@@ -1,8 +1,11 @@
-import type { NextConfig } from 'next';
-
-const nextConfig: NextConfig = {
+/** @type {import('next').NextConfig} */
+const nextConfig = {
     // Enable React strict mode for catching side-effect bugs early
     reactStrictMode: true,
+
+    // Emit a self-contained server bundle for the Docker runtime stage
+    // (the Dockerfile copies .next/standalone).
+    output: 'standalone',
 
     // All API calls go through the Spring Cloud Gateway
     // This avoids CORS issues in development

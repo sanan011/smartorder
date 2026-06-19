@@ -1,6 +1,5 @@
 package com.smartorder.cart.adapters.config;
 
-import com.smartorder.auth.adapters.config.GatewayHeaderAuthFilter;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
