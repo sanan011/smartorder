@@ -1,20 +1,32 @@
 plugins {
-    id 'java'
-}
-
-group = 'com.smartorder'
-version = '1.0-SNAPSHOT'
-
-repositories {
-    mavenCentral()
+    id 'org.springframework.boot'
 }
 
 dependencies {
-    testImplementation platform('org.junit:junit-bom:6.0.0')
-    testImplementation 'org.junit.jupiter:junit-jupiter'
-    testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+    implementation project(':shared:common-lib')
+
+    implementation 'org.springframework.boot:spring-boot-starter-web'
+    implementation 'org.springframework.boot:spring-boot-starter-actuator'
+    implementation 'org.springframework.boot:spring-boot-starter-data-mongodb'
+    implementation 'org.springframework.boot:spring-boot-starter-mail'
+
+    implementation 'org.springframework.kafka:spring-kafka'
+
+    implementation 'org.springframework.cloud:spring-cloud-starter-netflix-eureka-client'
+    implementation 'org.springframework.cloud:spring-cloud-starter-config'
+
+    implementation 'io.micrometer:micrometer-tracing-bridge-brave'
+    implementation 'io.zipkin.reporter2:zipkin-reporter-brave'
+    runtimeOnly    'io.micrometer:micrometer-registry-prometheus'
+
+    compileOnly            'org.projectlombok:lombok'
+    annotationProcessor    'org.projectlombok:lombok'
+    testCompileOnly        'org.projectlombok:lombok'
+    testAnnotationProcessor 'org.projectlombok:lombok'
+
+    testImplementation 'org.testcontainers:mongodb'
+    testImplementation 'org.testcontainers:kafka'
 }
 
-test {
-    useJUnitPlatform()
-}
+jar     { enabled = false }
+bootJar { enabled = true }

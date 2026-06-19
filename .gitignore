@@ -1,46 +1,27 @@
 # =========================================================================
-# SmartOrder Project - Combined .gitignore (Java/Spring/Gradle + Node/Next.js)
+# SmartOrder Project - Clean Consolidated .gitignore (Java/Spring + Next.js)
 # =========================================================================
 
-### Gradle / Java ###
-.gradle
+### Build & Dependency Directories ###
+.gradle/
 build/
 !gradle/wrapper/gradle-wrapper.jar
 !**/src/main/**/build/
 !**/src/test/**/build/
 .kotlin
-
-### Node / Frontend (Next.js) ###
 node_modules/
 **/node_modules/
 .next/
 out/
 dist/
-.env.local
-.env.development.local
-.env.test.local
-.env.production.local
-npm-debug.log*
-yarn-debug.log*
-yarn-error.log*
-.pnpm-debug.log*
+bin/
 
-### IntelliJ IDEA ###
-.idea/modules.xml
-.idea/jarRepositories.xml
-.idea/compiler.xml
-.idea/libraries/
-*.iws
+### IDEs & Editors (IntelliJ, VS Code, Eclipse) ###
+.idea/
 *.iml
+*.iws
 *.ipr
-out/
-!**/src/main/**/out/
-!**/src/test/**/out/
-
-### VS Code ###
 .vscode/
-
-### Eclipse ###
 .apt_generated
 .classpath
 .factorypath
@@ -48,18 +29,23 @@ out/
 .settings
 .springBeans
 .sts4-cache
-bin/
-!**/src/main/**/bin/
-!**/src/test/**/bin/
 
-### NetBeans ###
-/nbproject/private/
-/nbbuild/
-/dist/
-/nbdist/
-/.nb-gradle/
+### Environment Secrets & Local Configs ###
+*.env
+.env
+.env*.local
+!.env.example
+application-local.yml
+
+### Docker & Databases / Message Brokers (Kafka/Mongo data logs) ###
+docker-compose.override.yml
+# Docker daxilində MongoDB və ya Kafka-nın datalarını lokal qovluğa mount etsən, repoya getməsin:
+*/data/
+**/data/db/
+**/data/kafka/
 
 ### Operating System Files ###
 .DS_Store
 Thumbs.db
 *.log
+*.jar
