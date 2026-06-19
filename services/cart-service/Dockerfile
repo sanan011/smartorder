@@ -1,0 +1,8 @@
+FROM eclipse-temurin:21-jre-alpine
+WORKDIR /app
+COPY build/libs/*.jar app.jar
+EXPOSE 8085
+ENTRYPOINT ["java", "-XX:+UseContainerSupport", \
+            "-XX:MaxRAMPercentage=75.0", \
+            "-Djava.security.egd=file:/dev/./urandom", \
+            "-jar", "app.jar"]
