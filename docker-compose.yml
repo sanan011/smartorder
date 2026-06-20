@@ -114,7 +114,9 @@ services:
     networks:
       - smartorder-net
     healthcheck:
-      test: ["CMD-SHELL", "echo ruok | nc localhost 2181 | grep imok"]
+      # 'srvr' is whitelisted by default in cp-zookeeper; 'ruok' is not, which
+      # left the container perpetually unhealthy. srvr proves the server is live.
+      test: ["CMD-SHELL", "echo srvr | nc localhost 2181 | grep -q Zookeeper"]
       interval: 10s
       timeout:  5s
       retries:  5
@@ -246,9 +248,9 @@ services:
     networks:
       - smartorder-net
     healthcheck:
-      test: ["CMD", "curl", "-f",
-             "-u", "configuser:configpass",
-             "http://localhost:8888/actuator/health"]
+      # jre-alpine image has no curl; use busybox wget with URL-embedded creds.
+      test: ["CMD-SHELL",
+             "wget -q -O /dev/null http://configuser:configpass@localhost:8888/actuator/health"]
       interval: 15s
       timeout:  10s
       retries:  5
@@ -273,9 +275,9 @@ services:
     networks:
       - smartorder-net
     healthcheck:
-      test: ["CMD", "curl", "-f",
-             "-u", "eurekauser:eurekapass",
-             "http://localhost:8761/actuator/health"]
+      # jre-alpine image has no curl; use busybox wget with URL-embedded creds.
+      test: ["CMD-SHELL",
+             "wget -q -O /dev/null http://eurekauser:eurekapass@localhost:8761/actuator/health"]
       interval: 15s
       timeout:  10s
       retries:  5

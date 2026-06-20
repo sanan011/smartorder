@@ -21,11 +21,10 @@ public class KafkaConsumerConfig {
 
     @Bean
     public ConsumerFactory<String, Map<String, Object>> consumerFactory() {
-        JsonDeserializer<Map<String, Object>> deserializer =
-                new JsonDeserializer<>();
-        deserializer.addTrustedPackages("*");
-        deserializer.setUseTypeHeaders(false);
-
+        // Configure the JsonDeserializer entirely via configuration properties.
+        // Mixing instance setters (addTrustedPackages/setUseTypeHeaders) with the
+        // equivalent props throws "JsonDeserializer must be configured with
+        // property setters, or via configuration properties; not both".
         Map<String, Object> props = new HashMap<>();
         props.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG,  bootstrapServers);
         props.put(ConsumerConfig.GROUP_ID_CONFIG,           "notification-service-group");
@@ -38,8 +37,7 @@ public class KafkaConsumerConfig {
         props.put(JsonDeserializer.USE_TYPE_INFO_HEADERS, false);
         props.put(JsonDeserializer.VALUE_DEFAULT_TYPE, "java.util.HashMap");
 
-        return new DefaultKafkaConsumerFactory<>(props,
-                new StringDeserializer(), deserializer);
+        return new DefaultKafkaConsumerFactory<>(props);
     }
 
     @Bean

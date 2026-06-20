@@ -1,6 +1,6 @@
 FROM eclipse-temurin:21-jre-alpine
 WORKDIR /app
-COPY build/libs/*.jar app.jar
+COPY services/product-service/build/libs/*.jar app.jar
 EXPOSE 8082
 ENTRYPOINT ["java", "-XX:+UseContainerSupport", \
             "-XX:MaxRAMPercentage=75.0", \
