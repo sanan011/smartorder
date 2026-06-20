@@ -38,14 +38,25 @@ spring:
     show-sql: false
     open-in-view: false
 
-  # Redis serialization type hints
+  # Redis — local fallback (mirrors the datasource fallback above) so the service
+  # connects to the right host even when the Config Server import is inactive.
+  # REDIS_HOST/REDIS_PASSWORD are supplied by docker-compose (redis / smartorder).
+  # Without these, Spring Boot defaults to localhost:6379, which is unreachable
+  # inside the container.
   data:
     redis:
+      host: ${REDIS_HOST:localhost}
+      port: ${REDIS_PORT:6379}
+      password: ${REDIS_PASSWORD:}
       repositories:
         enabled: false   # We manage Redis manually via RedisTemplate
 
-  # Kafka producer defaults
+  # Kafka — local fallback for the same reason. KAFKA_BROKERS is supplied by
+  # docker-compose (kafka:29092). Without it, the producer points at
+  # localhost:9092 and blocks ~60s ("Topic ... not present in metadata") on every
+  # publish, which trips the gateway circuit breaker on registration.
   kafka:
+    bootstrap-servers: ${KAFKA_BROKERS:localhost:9092}
     producer:
       key-serializer: org.apache.kafka.common.serialization.StringSerializer
       value-serializer: org.springframework.kafka.support.serializer.JsonSerializer

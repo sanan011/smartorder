@@ -438,6 +438,11 @@ services:
     build:
       context: ./frontend
       dockerfile: Dockerfile
+      args:
+        # NEXT_PUBLIC_* vars are inlined at build time by `next build`.
+        # .env.local is excluded via .dockerignore, so the value must be
+        # passed in as a build arg for the browser bundle to point at the host.
+        NEXT_PUBLIC_GATEWAY_URL: http://localhost:8080
     container_name: smartorder-frontend
     ports:
       - "3000:3000"

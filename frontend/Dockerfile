@@ -3,6 +3,9 @@ WORKDIR /app
 COPY package*.json ./
 RUN npm install
 COPY . .
+# Inlined into the browser bundle by `next build` (passed from docker-compose build args)
+ARG NEXT_PUBLIC_GATEWAY_URL
+ENV NEXT_PUBLIC_GATEWAY_URL=$NEXT_PUBLIC_GATEWAY_URL
 RUN npm run build
 
 FROM node:24-alpine AS runner
