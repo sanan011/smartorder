@@ -12,6 +12,12 @@ dependencies {
     // Service discovery (EnableDiscoveryClient)
     implementation 'org.springframework.cloud:spring-cloud-starter-netflix-eureka-client'
 
+    // Centralized config client — REQUIRED for the `configserver:` config-data
+    // import in application.yml. Without it Spring Boot throws
+    // UnsupportedConfigDataLocationException at startup (optional: does NOT
+    // suppress an unrecognized location prefix).
+    implementation 'org.springframework.cloud:spring-cloud-starter-config'
+
     // Circuit breaker — REACTOR variant: the reactive gateway's 'CircuitBreaker'
     // GatewayFilterFactory needs a ReactiveCircuitBreakerFactory, which the plain
     // (servlet) resilience4j starter does NOT provide.

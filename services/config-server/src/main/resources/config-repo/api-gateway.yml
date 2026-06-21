@@ -35,3 +35,24 @@ smartorder:
       # Stricter limits on auth endpoints
       auth-replenish-rate: 5
       auth-burst-capacity: 10
+
+# Circuit-breaker / time-limiter tuning. The Resilience4j default TimeLimiter
+# timeout is 1s, which a cold first call to a downstream (connection setup +
+# first-pass security filter chain + JIT) routinely exceeds — that spuriously
+# tripped the breaker and forwarded requests to the fallback. Raise the budget
+# so only genuinely unavailable downstreams trip. `configs.default` is inherited
+# by every CircuitBreaker/TimeLimiter instance (auth-cb, product-cb, cart-cb, …).
+resilience4j:
+  timelimiter:
+    configs:
+      default:
+        timeout-duration: 10s
+        cancel-running-future: true
+  circuitbreaker:
+    configs:
+      default:
+        sliding-window-size: 20
+        minimum-number-of-calls: 10
+        failure-rate-threshold: 50
+        wait-duration-in-open-state: 10s
+        permitted-number-of-calls-in-half-open-state: 5

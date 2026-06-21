@@ -120,6 +120,11 @@ public class Cart {
      */
     public void mergeGuestCart(Cart guestCart) {
         guestCart.items.forEach((productId, guestItem) -> {
+            // FR-CART-04: don't let a merge push the cart past the 50 distinct-product
+            // cap. New products beyond the cap are skipped; existing ones still merge.
+            if (!items.containsKey(productId) && items.size() >= MAX_ITEMS) {
+                return;
+            }
             items.merge(productId, guestItem, (existing, incoming) -> {
                 int mergedQty = Math.min(
                         existing.getQuantity() + incoming.getQuantity(),

@@ -38,7 +38,11 @@ public class User {
         this.firstName           = firstName;
         this.lastName            = lastName;
         this.role                = role;
-        this.status              = UserStatus.PENDING_VERIFICATION;
+        // No email-verification flow exists in the BRD-delivered scope, so new
+        // accounts are immediately ACTIVE. Leaving them PENDING_VERIFICATION made
+        // login work but refresh-token and change-password reject the account
+        // (ACCOUNT_DISABLED), breaking the acceptance §9.1 token lifecycle.
+        this.status              = UserStatus.ACTIVE;
         this.failedLoginAttempts = 0;
         this.createdAt           = Instant.now();
         this.updatedAt           = Instant.now();

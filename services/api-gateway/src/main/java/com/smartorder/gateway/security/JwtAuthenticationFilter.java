@@ -13,6 +13,7 @@ import org.springframework.cloud.gateway.filter.GatewayFilterChain;
 import org.springframework.cloud.gateway.filter.GlobalFilter;
 import org.springframework.core.Ordered;
 import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.server.reactive.ServerHttpRequest;
@@ -33,13 +34,30 @@ public class JwtAuthenticationFilter implements GlobalFilter, Ordered {
 
     private final JwtProperties jwtProperties;
 
+    // Always public, regardless of HTTP method (these are POST auth endpoints
+    // and the actuator probes).
     private static final List<String> PUBLIC_PATHS = List.of(
             "/api/v1/auth/login",
             "/api/v1/auth/register",
             "/api/v1/auth/refresh",
-            "/api/v1/products",
-            "/api/v1/search",
             "/actuator"
+    );
+
+    // The product catalog and search are public for READS ONLY. Writes
+    // (POST/PUT/PATCH/DELETE) must be JWT-validated so the gateway injects the
+    // X-Auth-* identity headers the downstream services authorize against —
+    // otherwise seller/admin product operations are rejected with 403.
+    private static final List<String> PUBLIC_GET_PATHS = List.of(
+            "/api/v1/products",
+            "/api/v1/search"
+    );
+
+    // Optional-auth paths: usable by guests WITHOUT a token (FR-CART-01 guest
+    // carts keyed by X-Guest-Cart-Id). If a Bearer token IS supplied it is still
+    // validated and the X-Auth-* identity headers are injected (authenticated
+    // cart + /merge); only an entirely ABSENT token is allowed to pass as guest.
+    private static final List<String> OPTIONAL_AUTH_PATHS = List.of(
+            "/api/v1/cart"
     );
 
     @Override
@@ -52,13 +70,17 @@ public class JwtAuthenticationFilter implements GlobalFilter, Ordered {
         ServerHttpRequest request = exchange.getRequest();
         String path = request.getURI().getPath();
 
-        if (isPublicPath(path)) {
+        if (isPublicPath(path, request.getMethod())) {
             return chain.filter(exchange);
         }
 
         String authHeader = request.getHeaders().getFirst(HttpHeaders.AUTHORIZATION);
 
         if (authHeader == null || !authHeader.startsWith("Bearer ")) {
+            // Guests may use optional-auth paths (e.g. cart) without a token.
+            if (isOptionalAuthPath(path)) {
+                return chain.filter(exchange);
+            }
             return reject(exchange, HttpStatus.UNAUTHORIZED, "Missing or malformed Authorization header");
         }
 
@@ -108,8 +130,17 @@ public class JwtAuthenticationFilter implements GlobalFilter, Ordered {
                 .getPayload();
     }
 
-    private boolean isPublicPath(String path) {
-        return PUBLIC_PATHS.stream().anyMatch(path::startsWith);
+    private boolean isPublicPath(String path, HttpMethod method) {
+        if (PUBLIC_PATHS.stream().anyMatch(path::startsWith)) {
+            return true;
+        }
+        // Catalog/search reads are anonymous; writes require authentication.
+        return HttpMethod.GET.equals(method)
+                && PUBLIC_GET_PATHS.stream().anyMatch(path::startsWith);
+    }
+
+    private boolean isOptionalAuthPath(String path) {
+        return OPTIONAL_AUTH_PATHS.stream().anyMatch(path::startsWith);
     }
 
     private Mono<Void> reject(ServerWebExchange exchange,

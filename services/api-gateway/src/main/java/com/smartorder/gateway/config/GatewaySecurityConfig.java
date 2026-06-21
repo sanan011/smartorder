@@ -22,6 +22,12 @@ public class GatewaySecurityConfig {
                                 "/api/v1/auth/**",
                                 "/api/v1/products/**",       // read-only product browsing
                                 "/api/v1/search/**",
+                                // Cart supports guests; real auth (JWT validation +
+                                // identity-header injection) is enforced by the
+                                // JwtAuthenticationFilter GlobalFilter, not by this
+                                // reactive security layer (which never populates an
+                                // Authentication, so authenticated() is unsatisfiable).
+                                "/api/v1/cart/**",
                                 "/actuator/health",
                                 "/actuator/info"
                         ).permitAll()

@@ -2,7 +2,6 @@ package com.smartorder.gateway.fallback;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -18,37 +17,37 @@ import java.util.Map;
 @RequestMapping("/fallback")
 public class FallbackController {
 
-    @GetMapping("/auth")
+    @RequestMapping("/auth")
     public ResponseEntity<Map<String, Object>> authFallback() {
         return buildFallback("auth-service");
     }
 
-    @GetMapping("/product")
+    @RequestMapping("/product")
     public ResponseEntity<Map<String, Object>> productFallback() {
         return buildFallback("product-service");
     }
 
-    @GetMapping("/inventory")
+    @RequestMapping("/inventory")
     public ResponseEntity<Map<String, Object>> inventoryFallback() {
         return buildFallback("inventory-service");
     }
 
-    @GetMapping("/cart")
+    @RequestMapping("/cart")
     public ResponseEntity<Map<String, Object>> cartFallback() {
         return buildFallback("cart-service");
     }
 
-    @GetMapping("/order")
+    @RequestMapping("/order")
     public ResponseEntity<Map<String, Object>> orderFallback() {
         return buildFallback("order-service");
     }
 
-    @GetMapping("/seller")
+    @RequestMapping("/seller")
     public ResponseEntity<Map<String, Object>> sellerFallback() {
         return buildFallback("seller-service");
     }
 
-    @GetMapping("/notification")
+    @RequestMapping("/notification")
     public ResponseEntity<Map<String, Object>> notificationFallback() {
         return buildFallback("notification-service");
     }

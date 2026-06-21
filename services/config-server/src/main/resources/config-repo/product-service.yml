@@ -15,6 +15,13 @@ spring:
     hibernate:
       ddl-auto: validate
 
+  servlet:
+    multipart:
+      # FR-CAT-08 allows images up to 5MB; the Boot default is 1MB which would
+      # reject valid uploads before the service-layer size check runs.
+      max-file-size: 5MB
+      max-request-size: 6MB
+
   data:
     redis:
       host: ${REDIS_HOST:localhost}

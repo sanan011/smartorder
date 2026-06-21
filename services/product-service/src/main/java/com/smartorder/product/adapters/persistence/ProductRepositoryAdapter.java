@@ -9,14 +9,19 @@ import com.smartorder.product.ports.outbound.ProductRepositoryPort;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
+// open-in-view is disabled and the domain services are not transactional, so
+// entity->domain mapping (which touches the LAZY images collection) must run
+// inside a transaction here or it throws LazyInitializationException.
 @Component
 @RequiredArgsConstructor
+@Transactional
 public class ProductRepositoryAdapter implements ProductRepositoryPort {
 
     private final SpringDataProductRepository springDataRepo;
@@ -48,11 +53,9 @@ public class ProductRepositoryAdapter implements ProductRepositoryPort {
     }
 
     @Override
+    @Transactional(readOnly = true)
     public Optional<Product> findBySkuAndSellerId(String sku, UUID sellerId) {
-        return springDataRepo.findAll().stream()
-                .filter(e -> sku.equals(e.getSku()) && sellerId.equals(e.getSellerId()))
-                .findFirst()
-                .map(mapper::toDomain);
+        return springDataRepo.findBySkuAndSellerId(sku, sellerId).map(mapper::toDomain);
     }
 
     @Override

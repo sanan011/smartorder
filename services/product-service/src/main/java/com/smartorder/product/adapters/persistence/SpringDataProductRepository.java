@@ -20,6 +20,8 @@ interface SpringDataProductRepository extends JpaRepository<ProductJpaEntity, UU
 
     boolean existsBySkuAndSellerId(String sku, UUID sellerId);
 
+    Optional<ProductJpaEntity> findBySkuAndSellerId(String sku, UUID sellerId);
+
     @Query("SELECT p FROM ProductJpaEntity p WHERE p.sellerId = :sellerId " +
             "AND p.status = :status ORDER BY p.audit.createdAt DESC")
     List<ProductJpaEntity> findBySellerIdAndStatus(

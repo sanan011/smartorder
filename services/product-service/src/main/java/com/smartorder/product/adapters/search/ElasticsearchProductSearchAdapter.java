@@ -108,7 +108,9 @@ public class ElasticsearchProductSearchAdapter implements ProductSearchPort {
 
             return new SearchResult(productIds, totalHits, page, size);
 
-        } catch (IOException e) {
+        } catch (Exception e) {
+            // Catch ElasticsearchException (unchecked) too — a missing index or
+            // mapping must not 500 the homepage product listing; degrade to empty.
             log.error("Elasticsearch search failed: {}", e.getMessage());
             return new SearchResult(List.of(), 0L, page, size);
         }
@@ -165,6 +167,10 @@ public class ElasticsearchProductSearchAdapter implements ProductSearchPort {
         doc.put("reviewCount",  product.getReviewCount());
         doc.put("tags",         product.getTags());
         doc.put("slug",         product.getSlug());
+        // Recency sort field (FR-CAT-07 "newest"). Stored as epoch millis so the
+        // sort is a plain numeric sort, independent of date-format mapping.
+        doc.put("createdAt",    product.getCreatedAt() != null
+                ? product.getCreatedAt().toEpochMilli() : 0L);
 
         // Primary image for search results display
         if (product.getPrimaryImage() != null) {
@@ -238,7 +244,7 @@ public class ElasticsearchProductSearchAdapter implements ProductSearchPort {
                     case "price_asc"  -> s.sort(so -> so.field(f -> f.field("price").order(SortOrder.Asc)));
                     case "price_desc" -> s.sort(so -> so.field(f -> f.field("price").order(SortOrder.Desc)));
                     case "rating"     -> s.sort(so -> so.field(f -> f.field("averageRating").order(SortOrder.Desc)));
-                    case "newest"     -> s.sort(so -> so.field(f -> f.field("createdAt").order(SortOrder.Desc)));
+                    case "newest"     -> s.sort(so -> so.field(f -> f.field("createdAt").order(SortOrder.Desc).unmappedType(co.elastic.clients.elasticsearch._types.mapping.FieldType.Long)));
                     // default: relevance score
                 }
             }
